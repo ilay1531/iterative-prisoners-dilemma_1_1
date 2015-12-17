@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 
 ''' 
@@ -63,13 +65,13 @@ def play_round(player1, player2, history1, history2, score1, score2):
                 new_score2 = score2 + RELEASE
             else:
                 # players 1,2 collude, betray; get sucker, tempation
-                new_score1 = score1 + SEVERE_PUNISHMENT
+                new_score1 = score1 + RELEASE
                 new_score2 = score2 + TREAT
         else:
-            if action2 == 'c':
+            if action2 == 'b':
                 # players 1,2 betray, collude; get tempation, sucker
                 new_score1 = score1 + TREAT
-                new_score2 = score2 + SEVERE_PUNISHMENT                       
+                new_score2 = score2 + RELEASE                       
             else:
                 # both players betray; get punishment   
                 new_score1 = score1 + PUNISHMENT
@@ -111,9 +113,9 @@ def get_action(player, history, opponent_history, score, opponent_score, getting
     # This example player always colludes
     if player == 0:
         if getting_team_name:
-            return 'loyal'
+            return 'backstabber'
         else:
-            return 'c'
+            return 'b'
 
     
         
@@ -127,9 +129,32 @@ def get_action(player, history, opponent_history, score, opponent_score, getting
     #This example player always betrays.      
     elif player == 1:
         if getting_team_name:
-            return 'backstabber'
+            #if there was a previous round just like 
+            return 'loyal vengeful with permanent second impression'
         else:
-            return 'b'
+            # use history, opponent_history, score, opponent_score
+            # to compute your strategy      
+            if len(opponent_history)==0: #It's the first round: collude
+                return 'c'
+            else:
+                # if there was a previous round just like the last one,
+                # do whatever they did in the round that followed it
+                recent_round_opponent = opponent_history[-1]
+                recent_round_me = history[-1]
+                            
+                #go through rounds before that one
+                for round in range(len(history)-1):
+                    prior_round_opponent = opponent_history[round]
+                    prior_round_me = history[round]
+                    #if one matches
+                    if (prior_round_me == recent_round_me) and \
+                            (prior_round_opponent == recent_round_opponent):
+                        return opponent_history[round]
+                # no match found
+                if history[-1]=='c' and opponent_history[-1]=='b':
+                    return 'b' # betray is they were severely punished last time
+                else:
+                    return 'c' #otherwise collude
 
 
 
@@ -724,4 +749,3 @@ def play_tournament(num_players):
         print('player ' + str(player) , ': ' , 
                str(int(scores[player])/num_players) , ' points: ',
                team_names[player])
-    /*Whats up*/
